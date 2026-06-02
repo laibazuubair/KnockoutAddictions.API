@@ -18,7 +18,7 @@ builder.Services.AddControllers()
             ReferenceHandler.IgnoreCycles;
     });
 
-// ===================== SWAGGER + JWT BUTTON =====================
+// ===================== SWAGGER + JWT UI =====================
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -50,22 +50,19 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // ===================== DATABASE =====================
+// ⚠️ IMPORTANT: Change this to UseNpgsql when on Railway
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(
+    builder.Configuration.GetConnectionString("DefaultConnection"));
 
 // ===================== SERVICES =====================
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<TokenService>();
 
-// ===================== JWT CONFIG =====================
+// ===================== JWT =====================
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -78,7 +75,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+            Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
+        )
     };
 });
 
@@ -93,7 +91,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+// ===================== BUILD APP =====================
 var app = builder.Build();
 
 // ===================== SWAGGER =====================
@@ -104,11 +102,9 @@ if (app.Environment.IsDevelopment())
 }
 
 // ===================== PIPELINE =====================
-// app.UseHttpsRedirection(); (optional for now)
-
 app.UseCors("AllowAll");
 
-// 🔥 IMPORTANT ORDER
+// 🔥 JWT ORDER IS IMPORTANT
 app.UseAuthentication();
 app.UseAuthorization();
 

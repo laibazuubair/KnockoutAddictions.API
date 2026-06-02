@@ -135,3 +135,4 @@ C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net8.
 C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net8.0\KnockoutAddictions.API.pdb
 C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net8.0\KnockoutAddictions.API.genruntimeconfig.cache
 C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net8.0\ref\KnockoutAddictions.API.dll
+C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net8.0\KnockoutAddictions.API.sourcelink.json

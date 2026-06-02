@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("KnockoutAddictions.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb77b089a91c0e90349cb2375be6d2f244cbe8bf")]
 [assembly: System.Reflection.AssemblyProductAttribute("KnockoutAddictions.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("KnockoutAddictions.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
