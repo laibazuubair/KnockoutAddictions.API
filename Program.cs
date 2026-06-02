@@ -10,7 +10,7 @@ using KnockoutAddictions.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
+// ===================== CONTROLLERS =====================
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -18,7 +18,7 @@ builder.Services.AddControllers()
             ReferenceHandler.IgnoreCycles;
     });
 
-// Swagger
+// ===================== SWAGGER =====================
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -29,7 +29,8 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        In = ParameterLocation.Header
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT token}"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -48,38 +49,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
-// ===================== DATABASE (RAILWAY FIX) =====================
-var databaseUrl =
-    Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
-
-if (string.IsNullOrEmpty(databaseUrl))
-    throw new Exception("DATABASE CONNECTION STRING NOT FOUND");
-
-if (databaseUrl.StartsWith("postgresql://"))
-{
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-
-    databaseUrl =
-        $"Host={uri.Host};" +
-        $"Port={uri.Port};" +
-        $"Username={userInfo[0]};" +
-        $"Password={userInfo[1]};" +
-        $"Database={uri.AbsolutePath.TrimStart('/')};" +
-        $"SSL Mode=Require;Trust Server Certificate=true";
-}
+// ===================== DATABASE (POSTGRES - RAILWAY) =====================
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(databaseUrl));
+    options.UseNpgsql(connectionString));
 
-
-// Services
+// ===================== SERVICES =====================
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<TokenService>();
 
-// JWT
+// ===================== JWT AUTH =====================
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -94,12 +74,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
+
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
     };
 });
 
-// CORS
+// ===================== CORS =====================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -112,12 +93,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// ===================== SWAGGER (FIXED FOR RAILWAY) =====================
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "KnockoutAddictions API V1");
+    c.RoutePrefix = "swagger"; // ensures /swagger works
+});
 
+// ===================== PIPELINE =====================
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
