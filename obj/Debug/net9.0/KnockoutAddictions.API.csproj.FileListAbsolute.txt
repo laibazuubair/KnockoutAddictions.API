@@ -1,7 +1,0 @@
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.csproj.AssemblyReference.cache
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.AssemblyInfoInputs.cache
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.AssemblyInfo.cs
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.csproj.CoreCompileInputs.cache
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\Laiba\Desktop\KnockoutAddictions\KnockoutAddictions.API\obj\Debug\net9.0\KnockoutAddictions.API.MvcApplicationPartsAssemblyInfo.cache
