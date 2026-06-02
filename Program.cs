@@ -10,7 +10,7 @@ using KnockoutAddictions.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===================== CONTROLLERS =====================
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -18,7 +18,7 @@ builder.Services.AddControllers()
             ReferenceHandler.IgnoreCycles;
     });
 
-// ===================== SWAGGER + JWT UI =====================
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -29,8 +29,7 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter: Bearer {your JWT token}"
+        In = ParameterLocation.Header
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -44,22 +43,43 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[] { }
         }
     });
 });
 
-// ===================== DATABASE =====================
-// ⚠️ IMPORTANT: Change this to UseNpgsql when on Railway
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-    builder.Configuration.GetConnectionString("DefaultConnection"));
 
-// ===================== SERVICES =====================
+// ===================== DATABASE (RAILWAY FIX) =====================
+var databaseUrl =
+    Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(databaseUrl))
+    throw new Exception("DATABASE CONNECTION STRING NOT FOUND");
+
+if (databaseUrl.StartsWith("postgresql://"))
+{
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+
+    databaseUrl =
+        $"Host={uri.Host};" +
+        $"Port={uri.Port};" +
+        $"Username={userInfo[0]};" +
+        $"Password={userInfo[1]};" +
+        $"Database={uri.AbsolutePath.TrimStart('/')};" +
+        $"SSL Mode=Require;Trust Server Certificate=true";
+}
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(databaseUrl));
+
+
+// Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<TokenService>();
 
-// ===================== JWT =====================
+// JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -75,12 +95,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
-        )
+            Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
     };
 });
 
-// ===================== CORS =====================
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -91,20 +110,16 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ===================== BUILD APP =====================
 var app = builder.Build();
 
-// ===================== SWAGGER =====================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// ===================== PIPELINE =====================
 app.UseCors("AllowAll");
 
-// 🔥 JWT ORDER IS IMPORTANT
 app.UseAuthentication();
 app.UseAuthorization();
 
