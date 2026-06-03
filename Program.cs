@@ -10,7 +10,7 @@ using KnockoutAddictions.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===================== CONTROLLERS =====================
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -18,7 +18,7 @@ builder.Services.AddControllers()
             ReferenceHandler.IgnoreCycles;
     });
 
-// ===================== SWAGGER =====================
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -44,43 +44,46 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
 
-// ===================== DATABASE (POSTGRES - RAILWAY) =====================
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Database
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// ===================== SERVICES =====================
+// Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<TokenService>();
 
-// ===================== JWT AUTH =====================
+// JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
 
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
 
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
-    };
-});
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+            };
+    });
 
-// ===================== CORS =====================
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -93,27 +96,21 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ===================== SWAGGER (FIXED FOR RAILWAY) =====================
 app.UseSwagger();
+
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "KnockoutAddictions API V1");
-    c.RoutePrefix = "swagger"; // ensures /swagger works
+    c.SwaggerEndpoint(
+        "/swagger/v1/swagger.json",
+        "KnockoutAddictions API V1");
 });
 
-// ===================== PIPELINE =====================
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    // This creates tables automatically in Railway
-    db.Database.Migrate();
-}
 app.Run();
